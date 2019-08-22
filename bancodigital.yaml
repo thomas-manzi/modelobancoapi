@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: "1.0.0"
+  version: "1.0.1"
   title: "banco digital"
   description: "modelar api de um banco"
   contact:
@@ -35,8 +35,7 @@ paths:
       responses:
         200:
           description: OK
-    
-      
+
 definitions:
   
   
