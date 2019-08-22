@@ -1,0 +1,309 @@
+swagger: "2.0"
+info:
+  description: "Sciensa Bank API"
+  version: "1.0.0"
+  title: "API de correntistas do Sciensa Bank"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@swagger.io"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "petstore.swagger.io"
+basePath: "/api/v1"
+produces:
+  - "application/json"
+schemes:
+- "https"
+paths:
+  /contas:
+    post:
+      summary: "Rota de abertura de conta corrente"
+      operationId: "createAccount"
+      parameters:
+      - in: body
+        name: "request"
+        required: true
+        schema:
+          properties:
+            agencia:
+              type: integer
+            correntista:
+              $ref: "#/definitions/Correntista"
+      responses:
+        201:
+          description: "Conta-corrente criada com sucesso"
+          schema:
+            properties:
+              agencia:
+                type: number
+                format: int32
+              contaCorrente:
+                type: number
+                format: int32
+        400:
+          description: "parâmetros inválidos informados pelo cliente"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        404:
+          description: "agência informada não encontrada"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        500:
+          description: "erro não mapeado"
+          schema:
+            $ref: "#/definitions/ResponseError"
+      
+  /contas/{agencia}/{conta-corrente}:
+    get:
+      summary: "Consulta de informações gerais da conta-corrente"
+      operationId: "getAccountDetails"
+      parameters:
+      - $ref: "#/parameters/Agencia"
+      - $ref: "#/parameters/Conta"
+      responses:
+        200:
+          description: "sucesso"
+          schema:
+            properties:
+              saldo:
+                type: number
+                format: double
+              limites:
+                type: object
+                properties:
+                  cartaoCredito:
+                    type: object
+                    properties:
+                      limite:
+                        type: number
+                        format: double
+                      utilizado:
+                        type: number
+                        format: double
+                  chequeEspecial:
+                    type: object
+                    properties:
+                      limite:
+                        type: number
+                        format: double
+                      utilizado:
+                        type: number
+                        format: double
+        400:
+          description: "parâmetros inválidos informados pelo cliente"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        404:
+          description: "conta-corrente não encontrada"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        500:
+          description: "erro não mapeado"
+          schema:
+            $ref: "#/definitions/ResponseError"
+  
+  /contas/{agencia}/{conta-corrente}/extrato:
+    get:
+      summary: "Retorna as informações do Extrato"
+      operationId: "getExtrato"
+      parameters:
+        - $ref: '#/parameters/Agencia'
+        - $ref: '#/parameters/Conta'
+        - in: query
+          description: "data inicial das transações para gerar o Extrato"
+          name: data-inicial
+          type: string
+          format: date
+          required: true
+        - in: query
+          description: "Data final das transações para gerar o Extrato"
+          name: data-final
+          type: string
+          format: date
+          required: true
+        - $ref: '#/parameters/Page'
+        - $ref: '#/parameters/Size'
+      responses:
+        200:
+          description: "sucesso"
+          schema:
+            properties:
+              transacoes:
+                type: array
+                items:
+                  $ref: '#/definitions/Transacao'
+        400:
+          description: "parâmetros inválidos informados pelo cliente"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        404:
+          description: "conta-corrente não encontrada"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        500:
+          description: "erro não mapeado"
+          schema:
+            $ref: "#/definitions/ResponseError"        
+        
+  /contas/{agencia}/{conta-corrente}/favorecidos:
+    post:
+      summary: "Cadastra um favorecido"
+      operationId: "createFavored"
+      parameters:
+        - $ref: '#/parameters/Agencia'
+        - $ref: '#/parameters/Conta'
+        - in: body
+          name: "request"
+          required: true
+          schema:
+            $ref: '#/definitions/Favorecido'
+      responses:
+        201:
+          description: "Favorecido cadastrado com suecesso"
+          schema:
+            $ref: '#/definitions/Favorecido'
+        400:
+          description: "parâmetros inválidos informados pelo cliente"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        404:
+          description: "conta-corrente não encontrada"
+          schema:
+            $ref: "#/definitions/ResponseError"
+        500:
+          description: "erro não mapeado"
+          schema:
+            $ref: "#/definitions/ResponseError"
+    
+  /health:
+    get:
+      summary: "Rota de healthcheck da aplicação"
+      operationId: "health"
+      responses:
+        200:
+          description: "API funcionando"
+          schema:
+            properties:
+              version:
+                type: string
+              environment:
+                type: string
+      
+
+definitions:
+  ResponseError:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      type:
+        type: string
+      messages:
+        type: array
+        items:
+          type: string
+      cause:
+        type: object
+        properties:
+          name:
+            type: string
+          code:
+            type: number
+          message:
+            type: string
+
+  ResponseMeta:
+    type: object
+    properties:
+      version:
+        type: string
+      timestamp:
+        type: string
+        format: date-time
+      hostname:
+        type: string
+      numberOfRecords:
+        type: integer
+        format: int32
+      page:
+        type: integer
+        format: int32
+      size:
+        type: integer
+        format: int32
+  
+  Correntista:
+    type: object
+    properties:
+      nome:
+        type: string
+      sobreNome:
+        type: string
+      cpf:
+        type: integer
+  
+  Transacao:
+    type: object
+    properties:
+      valor:
+        type: number
+        format: double
+      data:
+        type: string
+        format: date-time
+      favorecido:
+        $ref: '#/definitions/Favorecido'
+  
+  Favorecido:
+    type: object
+    properties:
+      agencia:
+        type: integer
+        format: int32
+      conta:
+        type: integer
+        format: int32
+      nome:
+        type: string
+      cpf:
+        type: string
+        maxLength: 11
+        minLength: 11
+      banco:
+        type: string
+        
+
+parameters:
+  Agencia:
+    in: path
+    name: "agencia"
+    type: number
+    format: int32
+    required: true
+
+  Conta:
+    in: path
+    name: "conta-corrente"
+    type: number
+    format: int32
+    required: true
+
+  Page:
+    in: query
+    name: page
+    type: number
+    format: int32
+    default: 1
+  
+  Size:
+    in: query
+    name: size
+    type: number
+    format: int32
+    default: 20
+
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
