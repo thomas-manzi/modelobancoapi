@@ -1,0 +1,12 @@
+
+  
+#post em /contas
+#get em /contas/{agencia}/{conta}
+#get em /conta/{agencia}/{conta}/extrato
+#post em /conta/{agencia}/{conta}/favorecidos
+#put em /conta/{agencia}/{conta}/favorecidos/{id}
+#delete em /contas/{agencia}/{conta}/favorecidos/{id}
+#post em /conta/{agencia}/{conta}/transferencias
+#get em /conta/{agencia}/{conta}/transferencias
+ 
+  
